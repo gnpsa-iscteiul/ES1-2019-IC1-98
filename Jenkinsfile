@@ -1,38 +1,12 @@
-def dockeruser = "gnpsa"
-def imagename = "ubuntu:16"
-def container = "apache2"
 node {
-   echo 'Building Apache Docker Image'
 
-stage('Git Checkout') {
-    git 'https://github.com/gnpsa-iscteiul/ES1-2019-IC1-98'
-    }
-       
-stage('Build Docker Imagae'){
-     powershell "docker build -t  ${imagename} ."
-    }
-   
-stage('Stop Existing Container'){
-     powershell "docker stop ${container}"
-    }
-    
-stage('Remove Existing Container'){
-     powershell "docker rm ${container}"
-    }
-    
-stage ('Runing Container to test built Docker Image'){
-    powershell "docker run -dit --name ${container} -p 80:80 ${imagename}"
-    }
-    
-stage('Tag Docker Image'){
-    powershell "docker tag ${imagename} ${env.dockeruser}/ubuntu:16.04"
-    }
+    checkout scm
 
-stage('Docker Login and Push Image'){
-    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'dockerpasswd', usernameVariable: 'dockeruser')]) {
-    powershell "docker login -u ${dockeruser} -p ${dockerpasswd}"
-    }
-    powershell "docker push ${dockeruser}/ubuntu:16.04"
-    }
+    docker.withRegistry('https://registry.hub.docker.com', 'dockerHub') {
 
+        def customImage = docker.build("miltonc/dockerwebapp")
+
+        /* Push the container to the custom Registry */
+        customImage.push()
+    }
 }
