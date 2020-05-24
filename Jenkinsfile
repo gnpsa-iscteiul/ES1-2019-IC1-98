@@ -7,7 +7,11 @@ node {
 stage('Git Checkout') {
     git 'https://github.com/jvpreis/ESII'
     }
-    
+       
+stage('Build Docker Imagae'){
+     powershell "docker build -t  ${imagename} ."
+    }
+   
 stage('Stop Existing Container'){
      powershell "docker stop ${container}"
     }
